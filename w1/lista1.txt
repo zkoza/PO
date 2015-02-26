@@ -1,0 +1,11 @@
+Programowanie Obiektowe
+Lista 1
+
+1. W pliku liczby.txt znajduje się tablica 100x100 liczb rzeczywistych reprezentujących lokalną prędkość płynu w pewnym układzie. Baltazar chciałby zobaczyć ładny obraz tego przepływu. Pomóż mu i napisz program, który skonwertuje powyższy plik do formatu graficznego PGM (tryb tekstowy). 
+2. W plikach maly.eps i duzy.eps znajdują się przykłądowe definicje grafik wektorowych w formacie EPS. Napisz 
+(a) program w C++, który wygeneruje podobną techniką obraz N-kąta foremnego.
+(b) program w C++, który podobną techniką wygeneruje obraz przedstawiający spiralę Archimedesa (np. dla kąta od 0 do 10 pi) 
+
+Uwaga. Jesteśmy dorośli. Jeśli czegoś nie wiemy, pytamy kolegżanki i kolegów, prowadzącego, wikipedię etc. Przed przystapieniem do rozwązywania zadań zastanawiamy się, co wiemy, czego nam brakuje. Eksperymentujemy. 
+
+Powyższe zadania powinny utrwalić umiejętności związane z pątlą for a także pomóc rozrózniać pewne cechy liczb zmiennopozycyjnych od liczb całkowitych.    
