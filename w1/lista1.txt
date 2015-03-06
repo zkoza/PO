@@ -9,3 +9,5 @@ Lista 1
 Uwaga. Jesteśmy dorośli. Jeśli czegoś nie wiemy, pytamy koleżanek i kolegów, prowadzącego, Wikipedię etc. Przed przystąpieniem do rozwiązywania zadań zastanawiamy się, co wiemy, czego nam brakuje. Eksperymentujemy. 
 
 Powyższe zadania powinny utrwalić umiejętności związane z pętlą for a także pomóc uświadomić sobie pewne cechy liczb zmiennopozycyjnych i liczb całkowitych.    
+
+Powodzenia!
