@@ -20,3 +20,6 @@ HEADERS  += mainwindow.h \
     mywidget.h
 
 FORMS    += mainwindow.ui
+
+RESOURCES += \
+    zasoby.qrc

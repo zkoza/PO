@@ -6,13 +6,18 @@
 #include <qdrawutil.h>
 #include <QMouseEvent>
 #include <QMessageBox>
+#include <QLabel>
+#include <QProgressBar>
 
-MyWidget::MyWidget(QWidget *parent)
-    : QWidget(parent),
-      _L(20),
-      _N(10),
-      _NBombs(10)
+void MyWidget::init(int n)
 {
+    if (n != 8 && n != 20)
+        return;
+    _N = n;
+    _NBombs = (_N == 8) ? 10 : 100;
+    _visible.clear();
+    _neighbours.clear();
+
     _visible.resize(_N);
     _neighbours.resize(_N);
     for (int i = 0; i < _N; i++)
@@ -20,7 +25,6 @@ MyWidget::MyWidget(QWidget *parent)
        _visible[i].resize(_N);
        _neighbours[i].resize(_N);
     }
-    qsrand(time(0));
     for (int i = 0; i < _NBombs; i++)
     {
         bool ok = false;
@@ -32,7 +36,7 @@ MyWidget::MyWidget(QWidget *parent)
             if (ok)
             {
                 _neighbours[x][y] = eBomb;
-                qDebug() << i << x << y;
+              //  qDebug() << i << x << y;
             }
         }
     }
@@ -58,6 +62,57 @@ MyWidget::MyWidget(QWidget *parent)
             }
         }
     }
+    _przelicz_geometrie(rect().width(), rect().height());
+    _bombs = 0;
+    setStatusTip("");
+    if (_sb_progress)
+    {
+        _sb_progress->setMaximum(_NBombs);
+        _sb_progress->setValue(0);
+        QString s;
+        if (_NBombs < 100)
+            s = "QProgressBar {margin-right:35px; text-align: right;} QProgressBar::chunk {background-color: green; margin: 2 px;} ";
+        else
+            s = "QProgressBar {margin-right:45px; text-align: right;} QProgressBar::chunk {background-color: green; margin: 2 px;} ";
+        _sb_progress->setStyleSheet(s);
+    }
+}
+
+void MyWidget::_przelicz_geometrie(int w, int h)
+{
+    const int margin = 2;
+    h -= margin;
+    w -= margin;
+    _L = qMin(h/_N, w/_N);
+    _x0 = margin + (w - _N*_L)/2;
+    _y0 = margin + (h - _N*_L)/2;
+}
+
+MyWidget::MyWidget(QWidget *parent)
+    : QWidget(parent),
+      _sb_progress(0),
+      _statusBar(0)
+{
+    qsrand(time(0));
+    init(8);
+}
+
+void MyWidget::setStatusBar(QStatusBar *sb)
+{
+    _statusBar = sb;
+  //  _sb_label = new QLabel("00:00", this);
+    _sb_progress = new QProgressBar(this);
+    _sb_progress->setMaximum(_NBombs);
+    _sb_progress->setFormat("%v/%m");
+    _sb_progress->setTextVisible(true);
+    _sb_progress->setValue(0);
+
+    QString s;
+    s = "QProgressBar {margin-right:35px; text-align: right;} QProgressBar::chunk {background-color: green; margin: 2 px;} ";
+
+    _sb_progress->setStyleSheet(s);
+  //  _statusBar->addPermanentWidget(_sb_label);
+    _statusBar->addPermanentWidget(_sb_progress);
 
 }
 
@@ -68,23 +123,37 @@ MyWidget::~MyWidget()
 
 void MyWidget::paintEvent(QPaintEvent *)
 {
+    const QColor kolor[11] = {"white", "black", "blue", "green", "magenta", "orange", "cyan", "", "", "", "red"};
+
     QPainter painter(this);
+
+    QFont font("Arial", _L*3/5, 75);
+    painter.setFont(font);
 
 
     for (int i = 0; i < _N; i++)
     {
         for (int j = 0; j < _N; j++)
         {
+            const int n = _neighbours[i][j];
             QString s("0");
 
-            if (_neighbours[i][j] == eBomb)
+            if (n == eBomb)
                 s[0] = 'B';
             else
-                s[0] = char('0' + _neighbours[i][j]);
+                s[0] = char('0' + n);
 
-            qDrawShadePanel(&painter, i*_L, j*_L, _L, _L, palette(),_visible[i][j], 2);
-            if (_visible[i][j]  && _neighbours[i][j] > 0)
-                painter.drawText(i*_L, j*_L, _L, _L, Qt::AlignCenter, s);
+            qDrawShadePanel(&painter, _x0+ i*_L, _y0 +  j*_L, _L, _L, palette(),_visible[i][j], 2);
+            if (_visible[i][j]  && n > 0)
+            {
+                painter.setPen(kolor[n]);
+                if (n == eBomb)
+                {
+                    painter.setBrush(QColor("lightgreen"));
+                    painter.drawRect(_x0 + i*_L, _y0 + j*_L, _L, _L);
+                }
+                painter.drawText(_x0 + i*_L, _y0 + j*_L, _L, _L, Qt::AlignCenter, s);
+            }
           //  painter.drawRect(i*_L, j*_L, _L, _L);
         }
     }
@@ -99,14 +168,27 @@ void MyWidget::mousePressEvent(QMouseEvent * ev)
         return;
 
     QPoint point = ev->pos();
-    int i = point.x()/_L;
-    int j = point.y()/_L;
-    qDebug() << point << i << j;
+    int i = (point.x() - _x0)/_L;
+    int j = (point.y() - _y0)/_L;
+
+    if (_N > 10 && _bombs == 0 && _neighbours[i][j] == eBomb)
+    {
+      right_button = true;
+      left_button = false;
+      _statusBar->showMessage("Pierwsza mina - atrapa!", 2000);
+    }
+//    qDebug() << point << i << j << _bombs << _N;
     if (i < _N && j < _N && i >= 0 && j >= 0)
     {
         if (_visible[i][j])
             return;
         _visible[i][j] = true;
+        if (right_button)
+        {
+            _bombs++;
+            if (_neighbours[i][j] == eBomb)
+                _sb_progress->setValue(_bombs);
+        }
     }
     else
         return;
@@ -123,7 +205,7 @@ void MyWidget::mousePressEvent(QMouseEvent * ev)
         // koniec pieśni
         QString s = left_button ? "Bomba!" : "Tu nie ma bomby";
         QMessageBox::information(this, "koniec gry", s, QMessageBox::Ok);
-        this->setStatusTip(s);
+        setStatusTip(s);
     }
     if (_neighbours[i][j] == 0)
     {
@@ -160,21 +242,10 @@ void MyWidget::mousePressEvent(QMouseEvent * ev)
 
 }
 
-void MyWidget::mouseReleaseEvent(QMouseEvent *)
+
+
+void MyWidget::resizeEvent(QResizeEvent * ev)
 {
 
-}
-
-void MyWidget::showEvent(QShowEvent *)
-{
-
-}
-
-
-
-void MyWidget::resizeEvent(QResizeEvent *)
-{
-    QRect r = rect();
-    _L = qMin(r.height()/_N, r.width()/_N);
-
+    _przelicz_geometrie(ev->size().width(), ev->size().height());
 }
