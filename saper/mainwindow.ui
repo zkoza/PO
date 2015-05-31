@@ -125,7 +125,7 @@
     <string>20x20/100</string>
    </property>
    <property name="toolTip">
-    <string>20x20/100</string>
+    <string>20x20/80</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+2</string>

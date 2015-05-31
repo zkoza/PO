@@ -14,7 +14,7 @@ void MyWidget::init(int n)
     if (n != 8 && n != 20)
         return;
     _N = n;
-    _NBombs = (_N == 8) ? 10 : 100;
+    _NBombs = (_N == 8) ? 10 : 80;
     _visible.clear();
     _neighbours.clear();
 
@@ -32,6 +32,18 @@ void MyWidget::init(int n)
         {
             int x = qrand() % _N;
             int y = qrand() % _N;
+            if (_N >= 10)
+            {
+                if (x == 0 && y == 0)
+                    continue;
+                if (x == _N - 1 && y == _N - 1)
+                    continue;
+                if (x == 0 && y == _N - 1)
+                    continue;
+                if (x == _N - 1 && y == 0)
+                    continue;
+            }
+
             ok = _neighbours[x][y] != eBomb;
             if (ok)
             {
@@ -187,7 +199,20 @@ void MyWidget::mousePressEvent(QMouseEvent * ev)
         {
             _bombs++;
             if (_neighbours[i][j] == eBomb)
+            {
                 _sb_progress->setValue(_bombs);
+                if (_bombs == _NBombs)
+                {
+                    for (int i = 0; i < _N; i++)
+                    {
+                        for (int j = 0; j < _N; j++)
+                            _visible[i][j] = true;
+                    }
+                    QMessageBox::information(this, "Koniec gry", "Zwycięstwo!", QMessageBox::Ok);
+                    setStatusTip("Zwycięstwo!");
+                    return;
+                }
+            }
         }
     }
     else
